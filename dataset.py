@@ -15,7 +15,7 @@ class feature_dataset(Dataset):
 
         sc = MinMaxScaler()
         x_train = sc.fit_transform(x)
-        y_train = y
+        y_train = sc.fit_transform(y)
 
         self.x_train = torch.tensor(x_train, dtype=torch.float32)
         self.y_train = torch.tensor(y_train, dtype=torch.float32)

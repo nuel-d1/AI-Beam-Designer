@@ -1,9 +1,8 @@
 # imports
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import torch
 from torch import optim, nn
+
 from model import Net
 from dataset import feature_dataset
 
@@ -13,7 +12,7 @@ train_loader = torch.utils.data.DataLoader(feature_set, shuffle=True)
 model = Net()
 learning_rate = 0.001
 criterion = nn.BCELoss()
-optimizer = optim.SGD(model.parameters(), lr=learning_rate)
+optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 
 def training():
@@ -26,8 +25,10 @@ def training():
             loss = criterion(output, labels)
             train_loss.append(loss.item())
 
-            # optimizer.zero_grad()
+            optimizer.zero_grad()
             loss.backward()
-            # optimizer.step()
+            optimizer.step()
 
         print('Training loss: {}'.format(sum(train_loss)))
+
+training()
