@@ -2,12 +2,18 @@
 import pandas as pd
 import torch
 from torch import optim, nn
-
 from model import Net
 from dataset import feature_dataset
 
-feature_set = feature_dataset('data/data.csv')
-train_loader = torch.utils.data.DataLoader(feature_set, shuffle=True)
+# read entire data from csv file
+dataset = pd.read_csv('data/data.csv')
+
+# split dataset into training and testing sets &
+# load into custom dataset class
+train = feature_dataset(dataset[:90])
+test = feature_dataset(dataset[90:])
+train_loader = torch.utils.data.DataLoader(train, shuffle=True)
+test_loader = torch.utils.data.DataLoader(test)
 
 model = Net()
 learning_rate = 0.001
@@ -29,6 +35,8 @@ def training():
             loss.backward()
             optimizer.step()
 
-        print('Training loss: {}'.format(sum(train_loss)))
+        print('Epoch {}/{} | Training loss: {:.4f}'.format(epoch +
+              1, epochs, sum(train_loss)))
+
 
 training()
