@@ -4,7 +4,6 @@ import torch
 from torch.utils.data import Dataset
 from sklearn.preprocessing import MinMaxScaler
 
-
 class feature_dataset(Dataset):
 
     def __init__(self, data):
