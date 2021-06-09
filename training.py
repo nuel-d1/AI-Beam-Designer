@@ -19,7 +19,7 @@ train_loader = torch.utils.data.DataLoader(train, shuffle=True)
 test_loader = torch.utils.data.DataLoader(test)
 
 model = Net()
-learning_rate = 0.001
+learning_rate = 0.01
 criterion = nn.BCELoss()
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
@@ -27,8 +27,6 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 def training():
     writer = SummaryWriter()
     epochs = 500
-    train_loss_list = []
-    test_loss_list = []
 
     for epoch in range(epochs):
         train_loss = []
@@ -37,13 +35,11 @@ def training():
             output = model(features)
             loss = criterion(output, labels)
             train_loss.append(loss.item())
-            train_loss_list.append(loss.item())
             tr_loss = np.array(train_loss)
 
             for i, val in enumerate(tr_loss):
                 writer.add_scalar(
                     'Loss/train', scalar_value=val, global_step=i)
-            writer.close()
 
             optimizer.zero_grad()
             loss.backward()
@@ -58,13 +54,11 @@ def training():
                     output = model(features)
                     loss = criterion(output, labels)
                     test_loss.append(loss.item())
-                    test_loss_list.append(loss.item())
                     te_loss = np.array(test_loss)
                     
                     for i, val in enumerate(te_loss):
                         writer.add_scalar(
                             'Loss/test', scalar_value=val, global_step=i)
-                    writer.close()
 
             print('Epoch {}/{} | Training loss: {:.4f} | Test loss: {:.4f}'.format(
                 epoch, epochs, sum(train_loss), sum(test_loss)))
