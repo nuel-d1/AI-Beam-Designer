@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import torch
+import joblib
 from model import Net
 from sklearn.preprocessing import MinMaxScaler
 
@@ -15,6 +16,7 @@ def load_model(file_path):
 
     return model_class
 
+
 # Load saved model
 model = load_model(model_path)
 
@@ -24,19 +26,22 @@ st.sidebar.header('User Input Parameters')
 # user input variables
 span = st.sidebar.number_input('Span (m)')
 ultimate_load = st.sidebar.number_input('Ultimate load (kN/m)')
-steel_grade = st.sidebar.selectbox('Steel Grade', ['Fe-215', 'Fe-415', 'Fe-500'])
-concrete_strength = st.sidebar.selectbox('Concrete Strength', ['M15', 'M20', 'M25', 'M30'])
+steel_grade = st.sidebar.selectbox(
+    'Steel Grade', ['Fe-215', 'Fe-415', 'Fe-500'])
+concrete_strength = st.sidebar.selectbox(
+    'Concrete Strength', ['M15', 'M20', 'M25', 'M30'])
 
 generate_button = st.sidebar.button('generate initial design parameters')
 
 user_input = {'span': span,
-           'ultimate load': ultimate_load,
-           'steel grade': steel_grade,
-           'concrete strength': concrete_strength
-           }
+              'ultimate load': ultimate_load,
+              'steel grade': steel_grade,
+              'concrete strength': concrete_strength
+              }
 
 st.subheader('User Input Parameters')
 st.write(pd.DataFrame(user_input, index=[0]))
+
 
 def user_input_features(user_input):
     raw_data = {'span': user_input['span'],
@@ -56,10 +61,13 @@ def user_input_features(user_input):
 
 
 def inference(dict):
+    sc_x = joblib.load('scaler_x')
+    sc_y = joblib.load('scaler_y')
     user_input = user_input_features(dict)
-    features = torch.tensor(MinMaxScaler().fit_transform(user_input), dtype=torch.float32)
+    features = torch.tensor(sc_x.fit_transform(
+        user_input), dtype=torch.float32)
     with torch.no_grad():
-        output = model.forward(features)
+        output = model(features)
         output = output.numpy().reshape([-1, 1])
 
         data = {
@@ -70,8 +78,10 @@ def inference(dict):
             'Moment capacity (kNmm)': output[4]
         }
     predicted = pd.DataFrame(data, index=[0])
+    predicted[predicted.columns] = sc_y.inverse_transform(predicted)
 
     return predicted
+
 
 st.subheader('Model Output')
 if generate_button:
