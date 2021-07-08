@@ -9,66 +9,71 @@ model_path = 'designer_state.pth'
 
 def load_model(file_path):
     """function to load saved state of model"""
-    trained_model = Net()
-    trained_model.load_state_dict(torch.load(file_path))
-    trained_model.eval()
+    model_class = Net()
+    model_class.load_state_dict(torch.load(file_path))
+    model_class.eval()
 
-    return trained_model
-
+    return model_class
 
 # Load saved model
 model = load_model(model_path)
 
-
 st.title('AI Beam Designer')
-
 st.sidebar.header('User Input Parameters')
 
+# user input variables
+span = st.sidebar.number_input('Span (m)')
+ultimate_load = st.sidebar.number_input('Ultimate load (kN/m)')
+steel_grade = st.sidebar.selectbox('Steel Grade', ['Fe-215', 'Fe-415', 'Fe-500'])
+concrete_strength = st.sidebar.selectbox('Concrete Strength', ['M15', 'M20', 'M25', 'M30'])
 
-def user_input_features():
-    span = st.sidebar.number_input('Span (m)')
-    ultimate_load = st.sidebar.number_input('Ultimate load (kN/m)')
-    steel_grade = st.sidebar.selectbox(
-        'Steel Grade', ['Fe-215', 'Fe-415', 'Fe-500'])
-    concrete_strength = st.sidebar.selectbox(
-        'Concrete Strength', ['M15', 'M20', 'M25', 'M30'])
+generate_button = st.sidebar.button('generate initial design parameters')
 
-    data = {'span': span,
-            'ultimate_load': ultimate_load,
-            'steel_grade': steel_grade,
-            'concrete_strength': concrete_strength}
+user_input = {'span': span,
+           'ultimate load': ultimate_load,
+           'steel grade': steel_grade,
+           'concrete strength': concrete_strength
+           }
 
-    features = pd.DataFrame(data)
+st.subheader('User Input Parameters')
+st.write(pd.DataFrame(user_input, index=[0]))
+
+def user_input_features(user_input):
+    raw_data = {'span': user_input['span'],
+                'ultimate_load': user_input['ultimate load'],
+                'steel_Fe_215': 1 if user_input['steel grade'] == 'Fe-215' else 0,
+                'steel_Fe_415': 1 if user_input['steel grade'] == 'Fe-415' else 0,
+                'steel_Fe_500': 1 if user_input['steel grade'] == 'Fe-500' else 0,
+                'concrete M15': 1 if user_input['concrete strength'] == 'M15' else 0,
+                'concrete M20': 1 if user_input['concrete strength'] == 'M20' else 0,
+                'concrete M25': 1 if user_input['concrete strength'] == 'M25'else 0,
+                'concrete M30': 1 if user_input['concrete strength'] == 'M30' else 0
+                }
+
+    features = pd.DataFrame(raw_data, index=[0])
+
     return features
 
 
-df = user_input_features()
-st.subheader('User Input Parameters')
-st.write(df)
-
-
-def inference(df):
-    input_params = MinMaxScaler().fit_transform(df)
+def inference(dict):
+    user_input = user_input_features(dict)
+    features = torch.tensor(MinMaxScaler().fit_transform(user_input), dtype=torch.float32)
     with torch.no_grad():
-        output = model(input_params)
-
-        steel_area = output[0]
-        depth = output[1]
-        width = output[2]
-        cost = output[3]
-        moment_capacity = output[4]
+        output = model.forward(features)
+        output = output.numpy().reshape([-1, 1])
 
         data = {
-            'Steel area (cm^2)': steel_area,
-            'Depth (cm)': depth,
-            'Width (cm)': width,
-            'Cost per meter (₦/m)': cost,
-            'Moment capacity (kNmm)': moment_capacity
+            'Steel area (cm^2)': output[0],
+            'Depth (cm)': output[1],
+            'Width (cm)': output[2],
+            'Cost per meter (₦/m)': output[3],
+            'Moment capacity (kNmm)': output[4]
         }
-    predictors = pd.DataFrame(data)
-    return predictors
+    predicted = pd.DataFrame(data, index=[0])
 
+    return predicted
 
-prediction = inference(df)
-st.header('Model Output')
-st.write(prediction)
+st.subheader('Model Output')
+if generate_button:
+    prediction = inference(user_input)
+    st.write(prediction)
