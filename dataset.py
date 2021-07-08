@@ -9,12 +9,15 @@ import joblib
 class feature_dataset(Dataset):
 
     def __init__(self, data):
+        sc_x = MinMaxScaler()
+        sc_y = MinMaxScaler()
+        
+        data[['Span (m)', 'Ultimate load (kN/m)']] = sc_x.fit_transform(data[['Span (m)', 'Ultimate load (kN/m)']])
         x = data.iloc[0:, 0:9].values
         y = data.iloc[0:, 9:].values
 
-        sc_x = MinMaxScaler()
-        sc_y = MinMaxScaler()
-        x_values = sc_x.fit_transform(x)
+        
+        x_values = x
         y_values = sc_y.fit_transform(y)
 
         joblib.dump(sc_x, 'scaler_x')
@@ -22,8 +25,10 @@ class feature_dataset(Dataset):
         
         self.x_values = torch.tensor(x_values, dtype=torch.float32)
         self.y_values = torch.tensor(y_values, dtype=torch.float32)
+    
     def __len__(self):
         return len(self.y_values)
 
     def __getitem__(self, index):
         return self.x_values[index], self.y_values[index]
+

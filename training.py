@@ -15,14 +15,14 @@ train_loader = torch.utils.data.DataLoader(train, shuffle=True)
 
 model = Net()
 learning_rate = 0.001
-criterion = nn.MSELoss()
-optimizer = optim.SGD(model.parameters(), lr=learning_rate)
-#criterion = nn.BCELoss()
-#optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+# criterion = nn.MSELoss()
+# optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
+criterion = nn.BCELoss()
+optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 
 def training():
-    epochs = 500
+    epochs = 1000
 
     for epoch in range(epochs):
         train_loss = []
