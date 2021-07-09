@@ -55,7 +55,7 @@ def inference(df):
             'Depth (cm)': output[1],
             'Width (cm)': output[2],
             'Cost per meter (₦/m)': output[3],
-            'Moment capacity (kNm)': output[4]
+            'Moment capacity (Ncm)': output[4]
             }
 
             predicted = pd.DataFrame(data, index=[0])
