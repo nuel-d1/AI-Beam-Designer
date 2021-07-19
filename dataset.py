@@ -28,7 +28,7 @@ class feature_dataset(Dataset):
     
     def __len__(self):
         return len(self.y_values)
-
+    
     def __getitem__(self, index):
         return self.x_values[index], self.y_values[index]
 
