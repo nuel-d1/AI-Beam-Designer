@@ -3,3 +3,5 @@
 torch==1.4.0+cpu
 torchvision==0.5.0+cpu
 joblib==1.0.1
+scikit-learn==0.22
+matplotlib==3.4.2
