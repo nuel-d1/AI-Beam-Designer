@@ -11,10 +11,11 @@ class Net(nn.Module):
             nn.Sigmoid(),
             nn.Linear(in_features=50, out_features=30),
             nn.Sigmoid(),
-            nn.Linear(in_features=30, out_features=5),
-            nn.Sigmoid())
+            nn.Linear(in_features=30, out_features=5))
+            # nn.Sigmoid())
 
     def forward(self, x):
+        """forward pass"""
         x = self.predictor(x)
 
         return x
